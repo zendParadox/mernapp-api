@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const path = require("path");
 
 dotenv.config();
 
@@ -9,8 +11,39 @@ const app = express();
 const authRoutes = require("./src/routes/auth");
 const blogRoutes = require("./src/routes/blog");
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "image");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().getTime() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+// Configure multer
+const upload = multer({
+  storage: fileStorage,
+  fileFilter: fileFilter,
+});
+
 // Middleware for parsing JSON
 app.use(express.json());
+
+app.use("/image", express.static(path.join(__dirname, "image")));
+
+app.use(upload.single("image"));
 
 // Middleware to enable CORS
 app.use(cors());
