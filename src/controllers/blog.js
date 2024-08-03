@@ -116,3 +116,26 @@ exports.updateBlogPost = (req, res, next) => {
       next(err);
     });
 };
+
+exports.deleteBlogPost = (req, res, next) => {
+  const postId = req.params.postId;
+
+  BlogPost.findById(postId)
+    .then((result) => {
+      if (!result) {
+        const error = new Error("Blog Post Tidak Ditemukan");
+        error.errorStatus = 404;
+        throw error;
+      }
+      return BlogPost.findByIdAndDelete(postId);
+    })
+    .then((result) => {
+      res.status(200).json({
+        message: "Delete Blog Post Success",
+        data: result,
+      });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
